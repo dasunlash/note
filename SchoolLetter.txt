@@ -1,0 +1,1228 @@
+ 
+using Microsoft.EntityFrameworkCore;
+Microsoft.EntityFrameworkCore.SqlServer
+Microsoft.EntityFrameworkCore.Tools -for nuget packages
+
+private static string connectionString = @"Data Source=LAPTOP-M3BJQKLN\SQLEXPRESS;Initial Catalog=interviewDb;Integrated Security=True";
+
+        public static IDbConnection Conn()
+        {
+            return GetOpenedConnection();
+        }
+
+        public static SqlConnection GetOpenedConnection()
+        {
+            using (SqlConnection myConnection = new SqlConnection(connectionString))
+            {
+                if (myConnection.State == ConnectionState.Closed)
+                {
+                    myConnection.Open();
+                }
+                return new SqlConnection(connectionString);
+            }
+        }
+        public static void ExecuteWithoutReturn(string procedureName, DynamicParameters param = null)
+        {
+            Conn().Execute(procedureName, param, commandType: CommandType.StoredProcedure);
+
+        }
+        public static IEnumerable<T> ReturnList<T>(string procedureName, DynamicParameters param = null)
+        {
+            return Conn().Query<T>(procedureName, param, commandType: System.Data.CommandType.StoredProcedure);
+        }
+
+
+        //DapperORM.ExecuteReturnScalar<int>(_,_);
+        public static T ExecuteReturnScalar<T>(string procedureName, DynamicParameters param = null)
+        {
+            using (SqlConnection sqlCon = new SqlConnection(connectionString))
+            {
+                sqlCon.Open();
+                return (T)Convert.ChangeType(sqlCon.ExecuteScalar(procedureName, param, commandType: CommandType.StoredProcedure), typeof(T));
+            }
+
+        }
+
+--------------------------
+ConnectionStrings": {
+    "DevConnection": "Server=LAPTOP-M3BJQKLN\\SQLEXPRESS;Database=evicio;Trusted_Connection=True;MultipleActiveResultSets=True;"
+  }
+}
+
+//"Server=10.10.1.49;Database=student_db;User Id=SA;password=dev@123;Trusted_Connection=False;MultipleActiveResultSets=true;"
+
+--------------------
+
+import { Injectable } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+import { ServiceService } from '../service.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+
+  constructor(private router: Router,private service: ServiceService) {
+  }
+
+  canActivate(route: ActivatedRouteSnapshot,state: RouterStateSnapshot): boolean
+    {
+    if (this.service.currentUserValues != null)
+    {
+      if (this.service.currentUserValues.permissions.map(x => x).indexOf(route.data.path)===-1)
+     {
+
+        this.router.navigate(['/notFound']);
+      return false
+     }
+      return true;
+    }
+    else {
+      this.router.navigate(['/']);
+      return false;
+      //return true;
+    }
+
+  }
+}
+-------------------------------
+asp.net core mvc
+ services.AddAuthentication("CookieAuth").AddCookie("CookieAuth", config =>
+             {
+                 config.Cookie.Name = "Grandmas.Cookie";
+                 config.LoginPath = "/User/Login";
+             });
+            services.AddSession(options => {
+                options.IdleTimeout = TimeSpan.FromMinutes(1);//You can set Time   
+            });
+            services.AddControllersWithViews();
+
+
+      ------------
+if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseSession();
+
+            app.UseRouting();
+            app.UseAuthentication();    
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
+        }
+
+  [HttpPost]
+        public IActionResult ValidUser([FromBody] User user)
+        {
+                var userObj = ValidUser(user.Username, user.Password);
+                int? userId = ValidUser(user.Username, user.Password).UserId;
+                if (userId > 0)
+
+                {
+                    GetUserClaims(userId.ToString(), user.Username, userObj.Role, true);
+                HttpContext.Session.SetString("User", Newtonsoft.Json.JsonConvert.SerializeObject(userObj));
+                return Json(userId);
+                }
+                ViewBag.Error = "Usuario y/o contraseña incorrectos.";
+                return View(user);
+        }
+        private void GetUserClaims(string userId, string username, string role, bool rememberMe)
+        {
+           
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, userId),
+                    new Claim(ClaimTypes.Name, username),
+                    new Claim(ClaimTypes.Role, role)
+                };
+                 var identity = new ClaimsIdentity(claims, "claims");
+                 var usePrincipal = new ClaimsPrincipal(identity);
+                 HttpContext.SignInAsync(usePrincipal);
+        }
+
+[HttpPost, AllowAnonymous]
+        public async Task<IActionResult> LogOut()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Ok(true);
+        }
+       
+
+            
+------------------------------
+
+web api
+
+ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+           if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+            app.UseCors(x => x.AllowAnyOrigin().
+            AllowAnyHeader().
+            AllowAnyMethod());
+
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+        }
+
+
+public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = Configuration["Jwt:Issuer"],
+                ValidAudience = Configuration["Jwt:Issuer"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+            };
+        });
+        services.AddSingleton<IContributor,ContributorDAL>();
+        services.AddSingleton<IMaster,MasterDAL>();
+        services.AddSingleton<IStudent,StudentDAL>();
+        services.AddSingleton<ILogin,LoginDAL>();
+        }
+
+ public IActionResult Authenticate(LoginViewModel login)
+        {
+
+            var user = _login.Login(login);
+            var userId = user.UserId;
+            if (user.UserId > 0)
+            {
+                var Token = GenerateJSONWebToken(user);
+                return Ok(new { Token, userId, user.Permissions, user.RoleId, user.RoleName,user.KnownName });
+            }
+            else
+            {
+                return Ok(new { userId, user.Permissions, user.RoleId, user.RoleName, user.KnownName });
+            }
+
+        }
+
+        private string GenerateJSONWebToken(UserObject user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[] {
+
+                new Claim("ContributorId", user.ContributorId.ToString()),
+                new Claim("Name", user.KnownName.ToString()),
+                new Claim("UserId",user.UserId.ToString()),
+                new Claim("RoleId", user.RoleId.ToString()),
+                new Claim("RoleName",user.RoleName.ToString()),
+            };
+
+            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+                _config["Jwt:Issuer"],
+                claims,
+                expires: DateTime.Now.AddDays(365),
+            signingCredentials: credentials);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+-----------
+
+js
+$(document).ready(function () {
+});
+
+var form = {
+    save: function () {
+        debugger
+        var url = '../User/ValidUser';
+        form.sendRequestPost(form.createObject(), form.saveOtGridSuccess, form.handleError, url);
+    },
+
+    createObject: function () {
+        return {
+            Username: $('#txtUserName').val(),
+            password: $('#txtPassword').val()
+        }
+    },
+
+    saveOtGridSuccess: function (data) {
+        if (data > 0) {
+            location.replace('/Home/Index');
+        }
+    },
+
+    sendRequestGet: function (json, successMethod, errorMethod, url) {
+        $.ajax({
+            type: 'GET',
+            headers: { "Authorization": localStorage.getItem('token') },
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            url: url,
+            data: json,
+            success: successMethod,
+            error: errorMethod
+        });
+    },
+    sendRequestPost: function (json, successMethod, errorMethod, url) {
+        $.ajax({
+            type: 'POST',
+            headers: { "Authorization": localStorage.getItem('token') },
+            dataType: 'json',
+            contentType: 'application/json;charset=UTF-8',
+            accept: 'application/json, text/plain, */*',
+            url: url,
+            data: JSON.stringify(json),
+            success: successMethod,
+            error: errorMethod
+        });
+    },
+}
+
+function login_Click() {
+    debugger
+    form.save();
+}
+
+----------------------------------------------------
+encrpt password
+public class CryptoEncrypt
+        {
+            public static string Encrypt(string toEncrypt, bool useHashing)
+            {
+                byte[] keyArray;
+                byte[] toEncryptArray = UTF8Encoding.UTF8.GetBytes(toEncrypt);
+
+
+                string key = "Syed Moshiur Murshed";
+
+                if (useHashing)
+                {
+                    MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
+                    keyArray = hashmd5.ComputeHash(UTF8Encoding.UTF8.GetBytes(key));
+                    hashmd5.Clear();
+                }
+                else
+                    keyArray = UTF8Encoding.UTF8.GetBytes(key);
+
+                TripleDESCryptoServiceProvider tdes = new TripleDESCryptoServiceProvider();
+                tdes.Key = keyArray;
+                tdes.Mode = CipherMode.ECB;
+                tdes.Padding = PaddingMode.PKCS7;
+
+                ICryptoTransform cTransform = tdes.CreateEncryptor();
+                byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+                tdes.Clear();
+                return Convert.ToBase64String(resultArray, 0, resultArray.Length);
+            }
+        }
+---------------
+
+dapper
+public User GetUser(User user)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@Username", user.Username);
+            param.Add("@Password", user.Password);
+            var userObj = DbAccess.Returnlist<User>("Validate_User", param).FirstOrDefault<User>();
+            return userObj;
+        }
+------------
+
+angular
+-----    const id = +this._route.snapshot.paramMap.get('id');
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, Validators, FormGroup, NgForm } from '@angular/forms';
+import { Route } from '@angular/compiler/src/core';
+import { Router } from '@angular/router';
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { map, catchError } from 'rxjs/operators';
+import { throwError, Observable } from 'rxjs';
+
+  this._router.navigate(['/student-profile', id]);
+
+
+
+@Injectable({
+  providedIn: 'root'
+})
+---------
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+boostrap
+<nav
+    class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
+  >
+    <div class="container">
+      <a class="navbar-brand" [routerLink]="['/']">angualrevicio</a>
+
+      <div
+        class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse"
+      >
+        <ul class="navbar-nav flex-grow">
+          <li
+            class="nav-item"
+            [routerLinkActive]="['link-active']"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <a class="nav-link text-dark" [routerLink]="['/']">Home</a>
+          </li>
+          <li class="nav-item" [routerLinkActive]="['link-active']">
+            <a class="nav-link text-dark" [routerLink]="['/employee']"
+              >Employee</a
+            >
+          </li>
+          <li class="nav-item" [routerLinkActive]="['link-active']">
+            <a class="nav-link text-dark" [routerLink]="['/fetch-data']"
+              >Fetch data</a
+            >
+          </li>
+          <li class="nav-item" [routerLinkActive]="['link-active']">
+            <a class="nav-link text-dark" [routerLink]="['/login']" (click)="logOut()"
+              >Logout</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <router-outlet></router-outlet>
+------------------------
+asp.net mvc
+[HttpGet]
+        public ActionResult Logout()
+        {
+            Session["User"] = null;
+            FormsAuthentication.SignOut();
+            destroySession();
+            return RedirectToAction("Login", "User");
+
+
+        }
+  private void destroySession()
+        {
+            Session.Clear();
+            Session.Abandon();
+        }
+        private IAuthenticationManager AuthenticationManager => HttpContext.GetOwinContext().Authentication;
+
+        [HttpPost]
+        public ActionResult ValidUser(User user, string returnUrl)
+        {
+           
+
+            if (ModelState.IsValid)
+            {
+                var userObj = ValidUser(user.Username, user.Password);
+                int? userId = ValidUser(user.Username, user.Password).UserId;
+                if (userId>0)
+                
+                {
+                    IdentitySignin(userId.ToString(), user.Username, userObj.Role, true);
+                    Session.Add("User", userObj);
+                    return Json(userId);
+                }
+                ViewBag.Error = "Usuario y/o contraseña incorrectos.";
+            }
+            return View(user);
+        }
+        public void IdentitySignin(string userId, string name, string role, bool isPersistent = false)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.Name, name),
+                new Claim(ClaimTypes.Role,role)
+            };
+
+            var identity = new ClaimsIdentity(claims, DefaultAuthenticationTypes.ApplicationCookie);
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new FormsAuthenticationTicket(name, isPersistent, 24 * 3600 * 7);
+            var cookie = new HttpCookie(FormsAuthentication.FormsCookieName)
+            {
+                Path = FormsAuthentication.FormsCookiePath,
+                Value = FormsAuthentication.Encrypt(ticket),
+                Expires = ticket.Expiration
+            };
+            //Session.Timeout = 60;
+            Response.Cookies.Add(cookie);
+
+        }
+<authentication mode="Forms">
+      <forms defaultUrl="/Home/About" loginUrl="/Home/Index" slidingExpiration="true" timeout="2880"></forms>
+    </authentication>
+
+    <add name="interview" connectionString="Data Source=LAPTOP-M3BJQKLN\SQLEXPRESS;Initial Catalog=interviewDb;Integrated Security=True" />
+----------------------------------------
+
+       ajax
+$(document).ready(function () {
+    form.initValidateion();
+})
+var form = {
+    login: function () {
+        debugger
+        var url = '../User/ValidateUser';
+        form.sendRequestPost(form.createObject(), form.loginSucccess, form.handleError, url)
+    },
+    createObject: function () {
+        return {
+            Username: $('#txtUserName').val(),
+            Password: $('#txtPassword').val(),
+        }
+    },
+
+    loginSucccess: function () {
+
+    },
+    handleError: function () {
+
+    },
+    initValidateion: function ()
+    {
+        $('#loginForm').validate({
+            rules:
+            {
+                username: { required: true },
+                password: { required: true },
+            },
+            messages:
+            {
+                username:
+                {
+                    required: "User Name is required",
+                },
+                password:
+                {
+                    required: "Password in required",
+                },
+
+            },
+        });
+    },
+   
+
+      sendRequestGet: function (json, successMethod, errorMethod, url) {
+        $.ajax({
+            type: 'GET',
+            headers: { "Authorization": localStorage.getItem('token') },
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            url: url,
+            data: json,
+            success: successMethod,
+            error: errorMethod
+        });
+    },
+    sendRequestPost: function (json, successMethod, errorMethod, url) {
+        $.ajax({
+            type: 'POST',
+            headers: { "Authorization": localStorage.getItem('token') },
+            dataType: 'json',
+            contentType: 'application/json;charset=UTF-8',
+            accept: 'application/json, text/plain, */*',
+            url: url,
+            data: JSON.stringify(json),
+            success: successMethod,
+            error: errorMethod
+        });
+    },
+}
+
+function login_Click() {
+    if ($('#loginForm').valid()) {
+        form.login();
+    }
+}---------------------------------
+
+
+
+
+compoenet
+------------------
+ import { BankAccountService } from './../shared/bank-account.service';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormArray, Validators, FormGroup } from '@angular/forms';
+import { BankService } from '../shared/bank.service';
+
+@Component({
+  selector: 'app-bank-account',
+  templateUrl: './bank-account.component.html',
+  styleUrls: ['./bank-account.component.css']
+})
+export class BankAccountComponent implements OnInit {
+
+  bankAccountForms: FormArray = this.fb.array([]);
+  bankList = [];
+  notification = null;
+
+  constructor(private fb: FormBuilder,
+    private bankService: BankService,
+    private service: BankAccountService) { }
+
+  ngOnInit() {
+    this.bankService.getBankList()
+      .subscribe(res => this.bankList = res as []);
+
+    this.service.getBankAccountList().subscribe(
+      res => {
+        if (res == [])
+          this.addBankAccountForm();
+        else {
+          //generate formarray as per the data received from BankAccont table
+          (res as []).forEach((bankAccount: any) =>
+          {
+            this.bankAccountForms.push(this.fb.group({
+              bankAccountID: [bankAccount.bankAccountID],
+              accountNumber: [bankAccount.accountNumber, Validators.required],
+              accountHolder: [bankAccount.accountHolder, Validators.required],
+              bankID: [bankAccount.bankID, Validators.min(1)],
+              IFSC: [bankAccount.ifsc, Validators.required]
+            }));
+          });
+        }
+      }
+    );
+  }
+
+  addBankAccountForm() {
+    debugger
+    this.bankAccountForms.push(this.fb.group({
+      bankAccountID: [0],
+      accountNumber: ['', Validators.required],
+      accountHolder: ['', Validators.required],
+      bankID: [0, Validators.min(1)],
+      IFSC: ['', Validators.required]
+    }));
+  }
+
+  recordSubmit(fg: FormGroup) {
+    if (fg.value.bankAccountID == 0)
+      this.service.postBankAccount(fg.value).subscribe(
+        (res: any) => {
+          fg.patchValue({ bankAccountID: res.bankAccountID });
+          this.showNotification('insert');
+        });
+    else
+      this.service.putBankAccount(fg.value).subscribe(
+        (res: any) => {
+          this.showNotification('update');
+        });
+  }
+
+  onDelete(bankAccountID, i) {
+    if (bankAccountID == 0)
+      this.bankAccountForms.removeAt(i);
+    else if (confirm('Are you sure to delete this record ?'))
+      this.service.deleteBankAccount(bankAccountID).subscribe(
+        res => {
+          this.bankAccountForms.removeAt(i);
+          this.showNotification('delete');
+        });
+  }
+
+  showNotification(category) {
+    switch (category)
+     {
+      case 'insert':
+        this.notification = { class: 'text-success', message: 'saved!' };
+        break;
+      case 'update':
+        this.notification = { class: 'text-primary', message: 'updated!' };
+        break;
+      case 'delete':
+        this.notification = { class: 'text-danger', message: 'deleted!' };
+        break;
+
+      default:
+        break;
+    }
+    setTimeout(() =>
+    {
+      this.notification = null;
+    }, 3000);
+  }
+
+}
+--------------
+view
+
+<blockquote class="blockquote ml-5">
+    <h2>My Bank Accounts</h2>
+    <footer class="blockquote-footer">
+        Using inline table editing with <i>Angular 8</i> and <i>Asp.Net Core</i>
+    </footer>
+</blockquote>
+
+<div class="grid-table">
+    <div class="thead">
+        <div class="tr">
+            <div class="td">Account No.</div>
+            <div class="td">Account Holder</div>
+            <div class="td">Bank</div>
+            <div class="td">IFSC</div>
+            <div class="td">
+                <button class="btn btn-outline-success" (click)="addBankAccountForm()">
+                    <i class="fa fa-plus"></i> New Account
+                </button>
+            </div>
+            <div class="td">
+                <span *ngIf="notification" class="elementToFadeInAndOut">
+                    <i class="fas fa-check-circle {{notification.class}}"></i>
+                    {{notification.message}}
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="tbody">
+        <form class="tr" [formGroup]="fg" *ngFor="let fg of bankAccountForms.controls; let i=index;" (submit)="recordSubmit(fg)">
+            <div class="td">
+                <input class="form-control" formControlName="accountNumber">
+            </div>
+            <div class="td">
+                <input class="form-control" formControlName="accountHolder">
+            </div>
+            <div class="td">
+                <select class="form-control" formControlName="bankID">
+                    <option value="0">Select</option>
+                    <option *ngFor="let item of bankList" value="{{item.bankID}}">{{item.bankName}}</option>
+                </select>
+            </div>
+            <div class="td">
+                <input class="form-control" formControlName="IFSC">
+            </div>
+            {{fg.valid|json}}
+            <div class="td">
+                <button type="submit" class="btn" [disabled]="fg.invalid"
+                    [ngClass]="(fg.get('bankAccountID').value==0)?'btn-success':'btn-outline-dark'"><i
+                        class="far fa-save fa-lg"></i>
+                    {{fg.get('bankAccountID').value==0?'Submit':'Update'}}
+                </button>
+                <button class="btn btn-light ml-1" (click)="onDelete(fg.get('bankAccountID').value,i)">
+                    <i class="far fa-trash-alt fa-lg text-danger"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+--------------
+
+using System;
+using Dapper;
+using Microsoft.SqlServer.Server;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AviorERP.Master.Service.DataAccessLayer
+{
+    public class DbAccess:DbConnection
+    {
+        protected static DataSet ExecuteReader(string sp, int database)
+        {
+            return ExecuteReader(sp, null, database);
+        }
+
+        protected static DataSet ExecuteReader(string sp, List<SqlParameter> parameters = null, int database = AVIOR_ERP)
+        {
+            using (SqlConnection connection = DbAccess.GetOpenedConnection(database))
+            {
+                SqlCommand cmd = new SqlCommand(sp, connection);
+                cmd.CommandTimeout = 300;
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.Clear();
+                if (parameters != null && parameters.Count > 0)
+                {
+                    cmd.Parameters.AddRange(parameters.ToArray());
+                }
+                DataSet data;
+                new SqlDataAdapter(cmd).Fill(data = new DataSet());
+                return data;
+            }
+        }
+        protected static List<Dictionary<string, string>> TransformDataTableToList(DataTable table)
+        {
+            List<Dictionary<string, string>> data = new List<Dictionary<string, string>>();
+            if (table.Rows.Count > 0)
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    var obj = new Dictionary<string, string>();
+                    foreach (DataColumn column in table.Columns)
+                    {
+                        obj.Add(column.Caption, row[column.Ordinal].ToString());
+                    }
+                    data.Add(obj);
+                }
+            }
+            return data;
+        }
+
+        protected static DataTable ConvertListToDataTable<T>(string[] columns, List<T> items, Action<DataRowCollection, T> convert)
+        {
+            if (columns == null || columns.Length == 0 || items == null || convert == null)
+            {
+                throw new Exception("Invalid arguments");
+            }
+            DataTable dataTable = new DataTable();
+            foreach (string column in columns)
+            {
+                dataTable.Columns.Add(column);
+            }
+            foreach (T item in items)
+            {
+                convert(dataTable.Rows, item);
+            }
+            return dataTable;
+        }
+        public IEnumerable<SqlDataRecord> GetIdList(string fieldName, int[] idList)
+        {
+            if (idList == null || idList.Length == 0)
+            {
+                return null;
+            }
+            var meta = new SqlMetaData(fieldName, SqlDbType.BigInt);
+            return idList.Select(x => { var r = new SqlDataRecord(meta); r.SetInt32(0, x); return r; });
+        }
+        public DataTable sendIdsToSql(string id, int[] ids)
+        {
+            return ConvertListToDataTable(new string[] { "[" + id + "]" }, ids.ToList(), (DataRowCollection, e) =>
+            {
+                DataRowCollection.Add(new object[]{
+                    e
+                });
+            });
+        }
+
+        public class CryptoEncrypt
+        {
+            public static string Encrypt(string toEncrypt, bool useHashing)
+            {
+                byte[] keyArray;
+                byte[] toEncryptArray = System.Text.UTF8Encoding.UTF8.GetBytes(toEncrypt);
+
+
+                string key = "Syed Moshiur Murshed";
+
+                if (useHashing)
+                {
+                    MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
+                    keyArray = hashmd5.ComputeHash(UTF8Encoding.UTF8.GetBytes(key));
+                    hashmd5.Clear();
+                }
+                else
+                    keyArray = UTF8Encoding.UTF8.GetBytes(key);
+
+                TripleDESCryptoServiceProvider tdes = new TripleDESCryptoServiceProvider();
+                tdes.Key = keyArray;
+                tdes.Mode = CipherMode.ECB;
+                tdes.Padding = PaddingMode.PKCS7;
+
+                ICryptoTransform cTransform = tdes.CreateEncryptor();
+                byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+                tdes.Clear();
+                return Convert.ToBase64String(resultArray, 0, resultArray.Length);
+            }
+        }
+        /*Dapper Functions*/
+        public static List<IDictionary<string, object>> TransformDataToDic(IEnumerable<dynamic> result)
+        {
+            return result.Select(x => (IDictionary<string, object>)x)?.ToList();
+        }
+
+        public static void ExecuteWithoutReturn(string procedureName, DynamicParameters param = null, int database = DbConnection.AVIOR_ERP)
+        {
+
+            Conn(database).Execute(procedureName, param, commandType: CommandType.StoredProcedure);
+
+        }
+        public static T ExecuteReturnScalar<T>(string procedureName, DynamicParameters param = null, int database = AVIOR_ERP)
+        {
+            return (T)Convert.ChangeType(DbConnection.Conn().ExecuteScalar(procedureName, param, commandType: CommandType.StoredProcedure), typeof(T));
+
+        }
+        public static List<T> ReturnList<T>(string procedureName, DynamicParameters param = null, int database = DbConnection.AVIOR_ERP)
+        {
+            return Conn(database).Query<T>(procedureName, param, commandType: CommandType.StoredProcedure).ToList();
+        }
+        public static T ReturnObject<T>(string procedureName, DynamicParameters param = null, int database = DbConnection.AVIOR_ERP)
+        {
+            return Conn(database).Query<T>(procedureName, param, commandType: CommandType.StoredProcedure).FirstOrDefault();
+        }
+        public static SqlMapper.GridReader ReturnMultipleList(string procedureName, object /*DynamicParameters*/ param = null, int database = AVIOR_ERP)
+        {
+            return Conn(database).QueryMultiple(procedureName, param, commandType: CommandType.StoredProcedure);
+        }
+        public static object ReturnCoumnValue(string procedureName, DynamicParameters param = null, string columnName = null, int database = AVIOR_ERP)
+        {
+            var result = Conn(database).Query(procedureName, param, commandType: CommandType.StoredProcedure).Select(x => (IDictionary<string, object>)x).ToList().FirstOrDefault();
+            return result[columnName];
+        }
+        public static IEnumerable<Dictionary<string, object>> ReturnDicList(string procedureName, DynamicParameters param = null, int database = AVIOR_ERP)
+        {
+            var list= Conn(database).Query(procedureName, param, commandType: CommandType.StoredProcedure).Cast<IDictionary<string, object>>();
+            //return list.Select(r => r.ToDictionary(d => d.Key, d => d.Value?.ToString()));
+            return list.Select(r => r.ToDictionary(d => d.Key, d => d.Value));
+
+        }
+        public static List<IDictionary<string, object>> RetunSingleObject(string procedureName, DynamicParameters param = null, int database = AVIOR_ERP)
+        {
+            return Conn(database).Query(procedureName, param, commandType: CommandType.StoredProcedure).FirstOrDefault();
+        }
+        public static int ExecuteTranaction(string procedureName, /*DynamicParameters*/ object param = null, IDbTransaction trans = null, int database = AVIOR_ERP)
+        {
+            return _transaction.Connection.Execute(procedureName, param, _transaction, commandType: CommandType.StoredProcedure);
+
+        }
+        protected void ThrowSqlException(int number)
+        {
+            switch (number)
+            {
+                case 547:
+                    throw new Exception("Cannot delete this record, this is associated with other record.");
+                case 2601:
+                case 2627:
+                    throw new Exception("Cannot insert duplicate value.");
+                case 50000:
+                    throw new Exception("Record has been changed while you work, refersh the record and try again.");
+                default:
+                    throw new Exception("Process can not be completed.");
+            }
+        }
+    }
+}
+------------------------------
+
+confirm password
+<div class="form-group row" formGroupName="passwords">
+  <div class="form-group">
+     <label for="password" class="control-label">Contraseña:</label>
+     <input type="password" class="form-control" formControlName="password" title="Please enter your password">
+     <p class="help-block" *ngIf="signUpForm.get('password').hasError('required') && signUpForm.get('password').touched">Debe ingresar una contraseña</p>
+  </div>
+  <div class="form-group">
+     <label for="confirmedPassword" class="control-label">Confirmar Contraseña:</label>
+     <input type="password" class="form-control" formControlName="confirmedPassword"  title="Please re-enter your password">
+     <p class="help-block" *ngIf="signUpForm.get('confirmedPassword').hasError('required') && signUpForm.get('confirmedPassword').touched">Password must be required</p>
+     <p class="help-block" *ngIf="signUpForm.get('confirmedPassword').hasError('passwordMismatch') && signUpForm.get('confirmedPassword').touched">password does not match</p>
+  </div>
+     buildForm(): void {
+            this.userForm = this.formBuilder.group({
+                passwords: this.formBuilder.group({
+                    password: ['', [Validators.required]],
+                    confirm_password: ['', [Validators.required]],
+                }, {validator: this.passwordConfirming}),
+
+            });
+        }
+add this custom function for validate password and confirm password
+
+  passwordConfirming(c: AbstractControl): { invalid: boolean } {
+    if (c.get('password').value !== c.get('confirm_password').value) {
+        return {invalid: true};
+    }
+}
+Display error when password does not match
+
+<div style='color:#ff7355' *ngIf="userForm.get(['passwords','password']).value != userForm.get(['passwords','confirm_password']).value && userForm.get(['passwords','confirm_password']).value != null">
+  Password does not match</div>
+
+---------------service
+
+
+
+  postData(url, formData) {
+    return this.http.post(this.baseURI + url, formData).pipe(catchError(this.handleError));;
+  }
+  //
+  getData(url, param) {
+    return this.http.get(this.baseURI + url, {
+      params: param
+    }).pipe(catchError(this.handleError));
+  }
+  //
+  getStudents(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseURI + 'Student/GetStudents');
+  }
+  getProvinces(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseURI + 'Master/GetProvinces');
+  }
+  getsStudetCountsByProvince(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseURI + 'Master/GetStudentCountByProvince');
+  }
+  private handleError(errorResponse: HttpErrorResponse) {
+    if (errorResponse.error instanceof ErrorEvent) {
+      this.error = "clenet side error";
+    }
+    else {
+      this.error = "server side error";
+    }
+    return throwError(errorResponse);
+  }
+
+AdminLoginComponent } from './shared/admin-login/admin-login.component';
+
+const routes: Routes = [
+  { path: "", component: HomeComponent },
+  { path: '', redirectTo: '/', pathMatch: 'full' },
+  {path: 'login', loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)},
+  {path: '', loadChildren: () => import('./modules/contribution/contribution.module').then(m => m.ContributionModule)},
+  {path: '', loadChildren: () => import('./modules/student/student.module').then(m => m.StudentModule)},
+  {path: '', loadChildren: () => import('./modules/masterfiles/masterfiles.module').then(m => m.MasterfilesModule)},
+  { path: "about", component: AboutComponent },
+  { path: "contact", component: ContactComponent },
+  { path: "admin", component: AdminLoginComponent },
+  { path: "contributor", component: AdminLoginComponent },
+  { path: "**", component: NotFoundComponent },
+
+];
+
+
+const appRoutes: Routes = [
+  {
+    path: '',
+    children: [
+      { path: 'student', component: StudentComponent, canActivate: [AuthGuard], data: { path: 'student' } },
+      { path: 'student-detail', component: StudentDetailComponent, resolve: { studentList: StudentListResolve }, canActivate: [AuthGuard], data: { path: 'student-detail' } },
+      { path: 'student-profile/:id', component: StudentProfileViewComponent, canActivate: [AuthGuard], data: { path: 'student-profile' } },
+    ]
+  }
+]
+
+
+@NgModule({
+  imports: [RouterModule.forChild(appRoutes)],
+  exports: [RouterModule]
+})
+
+---------------bind
+
+var bindToDropdown = function (control, dropDownlist, defaultOption) {
+    $(control).html('');
+    if (defaultOption == undefined || defaultOption === true) {
+        $(control).append($('<option>').text('Select').attr('value', ''));
+    }
+    if (dropDownlist === 'null' || dropDownlist == null) return;
+    $(dropDownlist).each(function (index, val) {
+        $(control).append('<option value="' + val.id + '">' + val.name + '</option>');
+    });
+}
+
+-------------
+
+function createObject() {
+    var object = {};
+    if (selectedIndex === -1) {
+        object.id = -1;
+    } else {
+        object.id = list[selectedIndex].id;
+        object.timeStamp = list[selectedIndex].timeStamp;
+    }
+    object.name = $('#txtName').val();
+    object.active = $('#Active').is(':checked');
+    return object;
+}
+
+
+
+function updateGrid(data) {
+    $.each(data, function (key, item) {
+        $("#tbdata").append(key,formatItem(item));;
+    });
+    //if (selectedIndex === -1) {
+    //    addListItem(0, data);
+    //    setMessage('Record successfully saved.');
+    //} else {
+    //    addListItem(1, data);
+    //    setMessage('Record successfully updated.');
+    //}
+}
+
+function formatItem(index,item) {
+    return '<tr onClick="item_Click('+index+')><td>' + item.name + '</td> <td> ' + item.active + ' </td></tr>';
+}
+
+
+function formatDate(dateForFormat) {
+    if (dateForFormat) {
+        var datedate = new Date(parseInt(dateForFormat.substr(6)));
+        var dateformatted = datedate.getFullYear() + "." +
+              (datedate.getMonth() + 1) + "." +
+              datedate.getDate();
+        return dateformatted;
+    }
+    else {
+        return "--";
+    }
+}
+
+------
+<connectionStrings>
+    <add name="interview" connectionString="Data Source=LAPTOP-M3BJQKLN\SQLEXPRESS;Initial Catalog=interviewDb;Integrated Security=True" />
+  </connectionStrings>
+  <system.web>
+    <authentication mode="Forms">
+      <forms defaultUrl="/Home/About" loginUrl="/Home/Index" slidingExpiration="true" timeout="2880"></forms>
+    </authentication>
+    <compilation debug="true" targetFramework="4.7.2" />
+    <httpRuntime targetFramework="4.7.2" />
+  </system.web>
+
+-----------------
+   <table class="table-bordered table-striped table table-hover" id="">
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Action</th>
+                        </tr>
+                        <tbody id="tbdata">
+
+                        </tbody>
+                    </table>
+
+---------repository
+public class EmployeeRepository : IEmployee
+
+{
+
+private EmployeeDBEntities DBcontext;
+
+public EmployeeRepository(EmployeeDBEntities objempcontext)
+
+{
+
+this.DBcontext = objempcontext;
+
+}
+
+public void InsertEmployee(Models.EmployeeDetail Employee)
+
+{
+
+DBcontext.EmployeeDetails.Add(Employee);
+
+DBcontext.SaveChanges();
+
+}
+
+public IEnumerable<Models.EmployeeDetail> GetEmployees()
+
+{
+
+return DBcontext.EmployeeDetails.ToList();
+
+}
+
+public Models.EmployeeDetail GetEmployeeByID(int EmployeeId)
+
+{
+
+return DBcontext.EmployeeDetails.Find(EmployeeId);
+
+}
+
+public void UpdateEmployee(Models.EmployeeDetail Employee)
+
+{
+
+DBcontext.Entry(Employee).State = EntityState.Modified;
+
+DBcontext.SaveChanges();
+
+}
+
+public void DeleteEmployee(int EmployeeId)
+
+{
+
+EmployeeDetail user = DBcontext.EmployeeDetails.Find(EmployeeId);
+
+DBcontext.EmployeeDetails.Remove(user);
+
+DBcontext.SaveChanges();
+
+}
+----------------------
+
+public class EmpController : Controller
+
+{
+
+private IEmployee Iemp;
+
+public EmpController()
+
+{
+
+this.Iemp = new EmployeeRepository(new EmployeeDBEntities());
+
+}
+
+}
+---------------
+
+private IBookRepository _bookRepository;  
+public BookController()  
+{  
+    this._bookRepository = new BookRepository(new BookContext());  
+}  
+
+----------------------
+
+public ActionResult Index()
+
+{
+
+var list = Iemp.GetEmployees().ToList();
+
+return View(list);
+
+}
+
+      return Json(new  { Status = flag },, JsonRequestBehavior.AllowGet);
+
+--------------
+ public class BookContext : DbContext  
+    {  
+        public BookContext()  
+            : base("name=BookStoreConnectionString")  
+        {  
+        }  
+        public DbSet<Book> Books { get; set; }  
+    }  
