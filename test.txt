@@ -1,0 +1,1561 @@
+https://stackoverflow.com/questions/44864303/send-data-through-routing-paths-in-angular
+ ----------------------------------------------------------------JQUERY----------------------------------------------------------------------------------
+------------------------------------------------------------jquery ajax----------------------------------------------------------------------------------
+sendRequestGet: function (json, successMethod, errorMethod, url) {
+        $.ajax({
+            type: 'GET',
+            headers: { "Authorization": localStorage.getItem('token') },
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            url: url,
+            data: json,
+            success: successMethod,
+            error: errorMethod
+        });
+    },
+    sendRequestPost: function (json, successMethod, errorMethod, url) {
+        $.ajax({
+            type: 'POST',
+            headers: { "Authorization": localStorage.getItem('token') },
+            dataType: 'json',
+            contentType: 'application/json;charset=UTF-8',
+            accept: 'application/json, text/plain, */*',
+            url: url,
+            data: JSON.stringify(json),
+            success: successMethod,
+            error: errorMethod
+        });
+    },
+----------------------------------------------------------Validation-----------------------------------------------------------------------------------
+initValidateion: function ()
+    {
+        $('#loginForm').validate({
+            rules:
+            {
+                username: { required: true },
+                password: { required: true },
+            },
+            messages:
+            {
+                username:
+                {
+                    required: "User Name is required",
+                },
+                password:
+                {
+                    required: "Password in required",
+                },
+
+            },
+        });
+    },
+----------------------------------------------------------jquery crud--------------------------------------------------------------------------------------
+var list = [];
+var selectedIndex = -1;
+function btnSave_click() {
+    if ($('#frmForm').valid()) {
+        save();
+    }
+}
+
+function save() {
+    do_save(createObject());
+}
+
+function createObject() {
+    var object = {};
+    if (selectedIndex === -1) {
+        object.id = -1;
+    } else {
+        object.id = list[selectedIndex].id;
+        object.timeStamp = list[selectedIndex].timeStamp;
+    }
+    object.name = $('#txtName').val();
+    object.active = $('#Active').is(':checked');
+    return object;
+}
+
+function do_save(object) {
+    showLoading();
+    sendRequestPost(object, do_save_success, handleResponse, 'saveArea');
+}
+
+function do_save_success(result) {
+    if (result.result != null) {
+        updateGrid(result.result);
+        updateList(result.result);
+    }
+    clearAll();
+    hideLoading();
+}
+function myfunction() {
+    var myArray = ["Sam", "Mark", "Tim", "Sam"];
+    var array = [];
+    for (i = 0; i <= myArray.lengh; i++) {
+        if (!array.includes(myArray[i]))
+{
+            array.push(myArray[i]);
+
+        }
+    }
+    alert(array)
+}
+
+
+function updateGrid(data) {
+    $.each(data, function (key, item) {
+        $("#tbdata").append(key,formatItem(item));;
+    });
+    //if (selectedIndex === -1) {
+    //    addListItem(0, data);
+    //    setMessage('Record successfully saved.');
+    //} else {
+    //    addListItem(1, data);
+    //    setMessage('Record successfully updated.');
+    //}
+}
+
+function formatItem(index,item) {
+    return '<tr onClick="item_Click('+index+')><td>' + item.name + '</td> <td> ' + item.active + ' </td></tr>';
+}
+function itemClick(index) {
+}
+
+function addListItem(flag, data) {
+    if (flag === 0) {
+        $('#divListContainer').append(getListLine(list.length, data));
+    }
+    else {
+        $($('#divListContainer > div')[selectedIndex]).html(getListLine(selectedIndex, data));
+    }
+}
+
+function updateList(data) {
+    if (selectedIndex === -1) {
+        updateListItem(0, data);
+    } else {
+        updateListItem(1, data);
+    }
+}
+
+function updateListItem(flag, data) {
+    if (flag === 0) {
+        list.push(data);
+    }
+    else {
+        list[selectedIndex] = data;
+    }
+}
+
+function getAreas() {
+    showLoading();
+    sendRequestGet(null, getAreas_success, handleResponse, 'getAreas');
+}
+
+function getAreas_success(result) {
+    if (result.result != null) {
+        list = result.result;
+        updateGrid(list);
+    }
+    hideLoading();
+}
+
+function drawItemRow(list) {
+    $('#divListContainer').empty();
+    var lines = '';
+    for (var loopArea = 0; loopArea < list.length; loopArea++) {
+        lines += getListLine(loopArea, list[loopArea]);
+    }
+    $('#divListContainer').append(lines);
+}
+
+function getListLine(loopIndex, lineData) {
+    return '<div class="time-entry row-line" id = "row_' + loopIndex + '"><div onclick="item_click(' + loopIndex + ')" class="item-row">' + lineData.name + '</div> <span onclick="deleteItem_click(' + loopIndex + ')" data-toggle="modal" data-target="#deleteMsg" > <i class="icofont icofont-ui-delete" ></i></div>';
+}
+
+function deleteItem_click(index) {
+    $('#btnYes').attr('onclick', 'btnYes_click(' + index + ')');
+}
+
+function item_click(index) {
+    setListActiveRow(index);
+    selectedIndex = index;
+    clearErrorMessages();
+    setValuesToView(index);
+}
+
+function setValuesToView(index) {
+    $('#txtName').val(list[index].name);
+    $('#Active').prop('checked', list[index].active);
+}
+
+function btnYes_click(index) {
+    selectedIndex = index;
+    do_delete(list[selectedIndex]);
+}
+
+function do_delete(object) {
+    showLoading();
+    sendRequestPost(object, do_delete_success, handleResponse, 'deleteArea');
+}
+
+function do_delete_success() {
+    $('#divListContainer #row_' + selectedIndex).remove();
+    list.splice(selectedIndex, 1);
+    drawItemRow(list);
+    clearAll();
+    setMessage('Record successfully deleted.');
+    hideLoading();
+}
+
+function btnClear_click() {
+    clearAll();
+}
+
+function clearAll() {
+    $('#txtName').val('');
+    $('#txtSearch').val('');
+    selectedIndex = -1;
+    clearErrorMessages();
+    $('.time-entry').css('display', 'block');
+    $('#Active').prop('checked', true);
+    $('.active').removeClass('active');
+}
+
+$(document).ready(function () {
+    getAreas();
+    $('#txtSearch').searchFilter({ targetSelector: '.time-entry' });
+});
+----------------------------------------------------dropdown binding--------------------------------------------------------------------------------
+
+var bindToDropdown = function (control, dropDownlist, defaultOption) {
+    $(control).html('');
+    if (defaultOption == undefined || defaultOption === true) {
+        $(control).append($('<option>').text('Select').attr('value', ''));
+    }
+    if (dropDownlist === 'null' || dropDownlist == null) return;
+    $(dropDownlist).each(function (index, val) {
+        $(control).append('<option value="' + val.id + '">' + val.name + '</option>');
+    });
+}
+----------------------------------------------------------------JQUERY----------------------------------------------------------------------------------
+
+----------------------------------------------------------------ANGULAR------------------------------------------------------------
+----------------------------------------------------------------angular array example----------------------------------------------
+
+
+
+compoenet
+------------------
+ import { BankAccountService } from './../shared/bank-account.service';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormArray, Validators, FormGroup } from '@angular/forms';
+import { BankService } from '../shared/bank.service';
+
+@Component({
+  selector: 'app-bank-account',
+  templateUrl: './bank-account.component.html',
+  styleUrls: ['./bank-account.component.css']
+})
+export class BankAccountComponent implements OnInit {
+
+  bankAccountForms: FormArray = this.fb.array([]);
+  bankList = [];
+  notification = null;
+
+  constructor(private fb: FormBuilder,
+    private bankService: BankService,
+    private service: BankAccountService) { }
+
+  ngOnInit() {
+    this.bankService.getBankList()
+      .subscribe(res => this.bankList = res as []);
+
+    this.service.getBankAccountList().subscribe(
+      res => {
+        if (res == [])
+          this.addBankAccountForm();
+        else {
+          //generate formarray as per the data received from BankAccont table
+          (res as []).forEach((bankAccount: any) =>
+          {
+            this.bankAccountForms.push(this.fb.group({
+              bankAccountID: [bankAccount.bankAccountID],
+              accountNumber: [bankAccount.accountNumber, Validators.required],
+              accountHolder: [bankAccount.accountHolder, Validators.required],
+              bankID: [bankAccount.bankID, Validators.min(1)],
+              IFSC: [bankAccount.ifsc, Validators.required]
+            }));
+          });
+        }
+      }
+    );
+  }
+
+  addBankAccountForm() {
+    debugger
+    this.bankAccountForms.push(this.fb.group({
+      bankAccountID: [0],
+      accountNumber: ['', Validators.required],
+      accountHolder: ['', Validators.required],
+      bankID: [0, Validators.min(1)],
+      IFSC: ['', Validators.required]
+    }));
+  }
+
+  recordSubmit(fg: FormGroup) {
+    if (fg.value.bankAccountID == 0)
+      this.service.postBankAccount(fg.value).subscribe(
+        (res: any) => {
+          fg.patchValue({ bankAccountID: res.bankAccountID });
+          this.showNotification('insert');
+        });
+    else
+      this.service.putBankAccount(fg.value).subscribe(
+        (res: any) => {
+          this.showNotification('update');
+        });
+  }
+
+  onDelete(bankAccountID, i) {
+    if (bankAccountID == 0)
+      this.bankAccountForms.removeAt(i);
+    else if (confirm('Are you sure to delete this record ?'))
+      this.service.deleteBankAccount(bankAccountID).subscribe(
+        res => {
+          this.bankAccountForms.removeAt(i);
+          this.showNotification('delete');
+        });
+  }
+
+  showNotification(category) {
+    switch (category)
+     {
+      case 'insert':
+        this.notification = { class: 'text-success', message: 'saved!' };
+        break;
+      case 'update':
+        this.notification = { class: 'text-primary', message: 'updated!' };
+        break;
+      case 'delete':
+        this.notification = { class: 'text-danger', message: 'deleted!' };
+        break;
+
+      default:
+        break;
+    }
+    setTimeout(() =>
+    {
+      this.notification = null;
+    }, 3000);
+  }
+
+}
+--------------
+view
+
+<blockquote class="blockquote ml-5">
+    <h2>My Bank Accounts</h2>
+    <footer class="blockquote-footer">
+        Using inline table editing with <i>Angular 8</i> and <i>Asp.Net Core</i>
+    </footer>
+</blockquote>
+
+<div class="grid-table">
+    <div class="thead">
+        <div class="tr">
+            <div class="td">Account No.</div>
+            <div class="td">Account Holder</div>
+            <div class="td">Bank</div>
+            <div class="td">IFSC</div>
+            <div class="td">
+                <button class="btn btn-outline-success" (click)="addBankAccountForm()">
+                    <i class="fa fa-plus"></i> New Account
+                </button>
+            </div>
+            <div class="td">
+                <span *ngIf="notification" class="elementToFadeInAndOut">
+                    <i class="fas fa-check-circle {{notification.class}}"></i>
+                    {{notification.message}}
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="tbody">
+        <form class="tr" [formGroup]="fg" *ngFor="let fg of bankAccountForms.controls; let i=index;" (submit)="recordSubmit(fg)">
+            <div class="td">
+                <input class="form-control" formControlName="accountNumber">
+            </div>
+            <div class="td">
+                <input class="form-control" formControlName="accountHolder">
+            </div>
+            <div class="td">
+                <select class="form-control" formControlName="bankID">
+                    <option value="0">Select</option>
+                    <option *ngFor="let item of bankList" value="{{item.bankID}}">{{item.bankName}}</option>
+                </select>
+            </div>
+            <div class="td">
+                <input class="form-control" formControlName="IFSC">
+            </div>
+            {{fg.valid|json}}
+            <div class="td">
+                <button type="submit" class="btn" [disabled]="fg.invalid"
+                    [ngClass]="(fg.get('bankAccountID').value==0)?'btn-success':'btn-outline-dark'"><i
+                        class="far fa-save fa-lg"></i>
+                    {{fg.get('bankAccountID').value==0?'Submit':'Update'}}
+                </button>
+                <button class="btn btn-light ml-1" (click)="onDelete(fg.get('bankAccountID').value,i)">
+                    <i class="far fa-trash-alt fa-lg text-danger"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+-----------------------------------------------angular validation-------------------------------------------------
+
+export class ValidatorService{
+
+  static validationSet(error,controlName){
+    var settings={
+      "required":""+controlName+" is required",
+        "maxLength":"Name is required",
+        "min":""+controlName+" is required",
+
+    }
+    return settings[error];
+  }
+
+}
+
+---------------------------
+
+  constructor() { }
+
+  ngOnInit(): void {
+  }
+
+  @Input() control:AbstractControl;
+  @Input() controlName:string
+  @Input() submit: boolean;
+
+
+
+get errorMsg(){
+  for(var error in this.control.errors){
+    debugger
+    if ((this.control.errors.hasOwnProperty(error) && this.submit)) {
+      return   ValidatorService.validationSet(error,this.controlName);
+
+    }
+  }
+}--------------------authguard-----------------------------------------------------------
+
+import { Injectable } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+import { ServiceService } from '../service.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+
+  constructor(private router: Router,private service: ServiceService) {
+  }
+
+  canActivate(route: ActivatedRouteSnapshot,state: RouterStateSnapshot): boolean
+    {
+    if (this.service.currentUserValues != null)
+    {
+      if (this.service.currentUserValues.permissions.map(x => x).indexOf(route.data.path)===-1)
+     {
+
+        this.router.navigate(['/notFound']);
+      return false
+     }
+      return true;
+    }
+    else {
+      this.router.navigate(['/']);
+      return false;
+      //return true;
+    }
+
+  }
+}
+-------------------------------------------------angular service-----------------------------------------------------------------------------------
+private readonly wep_Api:string='https://localhost:44371/api/'
+
+  constructor(private http:HttpClient) { }
+
+  postData(url,data){
+    return this.http.post(this.wep_Api+url,data).pipe(catchError(this.handleError))
+   }
+   getData(url,param){
+     return this.http.get(this.wep_Api+url,{params:param}).pipe(catchError(this.handleError))
+   }
+   handleError(handleError: HttpErrorResponse) {
+     return throwError('error')
+   }
+   isUserLogin(){
+    var user=localStorage.getItem('currentUser');
+    if(user!=null){
+      return true
+    }
+    return false;
+   }
+   getUser(){
+    var user= JSON.parse(localStorage.getItem("currentUser"))
+    if(user!=null){
+      return user
+    }
+    return null;
+   }
+-------------------------------------------------angular crud----------------------------------------------------------------------------------
+
+
+  constructor(private fb: FormBuilder,private _router: Router,public service: ServiceService, private _route: ActivatedRoute,private toaster: ToastrService) { }
+  isSubmit: boolean = false;
+  notification = null;
+  users:[]= null;
+
+  public frmAppointment: FormGroup;
+
+  ngOnInit(): void {
+    debugger
+    this.initAppointmentForm();
+    this.getUsers();
+    debugger
+    const appointmentId = +this._route.snapshot.paramMap.get('id');
+    this.getAppointmentById(appointmentId);
+
+  }
+  get f() {
+    return this.frmAppointment.controls
+  }
+  getAppointmentById(appointmentId){
+    this.service.getData('Appointments/GetAppointmentById', {appointmentId:appointmentId}).subscribe(
+      res => this.getAppointmentById_success(res),
+      error => this.handleError(error))
+  }
+  getAppointmentById_success(result){
+    debugger
+    if(result!=null){
+      this.setValueToView(result);
+    }
+    }
+  initAppointmentForm() {
+    this.frmAppointment = this.fb.group({
+      Id: [0],
+      Name: ['',[Validators.required]],
+      Date: [(new Date()).toISOString().substring(0, 10), [Validators.required]],
+      Description: ['', [Validators.required]],
+      AppointedUserId: ['-1', [Validators.required]],
+    })
+  }
+  getUsers(){
+    this.service.getData('Login/GetUsers', null).subscribe(
+      res => this.getUser_success(res),
+      error => this.handleError(error))
+  }
+  getUser_success(result){
+  this.users=result;
+  }
+
+
+  save_Subject_Click(): void {
+    this.isSubmit = true;
+
+    if (this.frmAppointment.invalid) {
+      return;
+    }
+    this.doSave();
+  }
+  doSave(): void {
+    this.service.postData('Appointments/SaveAppointment', this.createObject()).subscribe(
+      res => this.saveAppointments_success(res),
+      error => this.handleError(error)
+    )
+  }
+  saveAppointments_success(result): void {
+    // this.updateList(result)
+    this.clearAll();
+    this.toaster.success('Record Saved Successfully');
+    this._router.navigate(['/appointment-list']);
+  }
+
+
+  handleError(error): void {
+    this.isSubmit = false;
+
+  }
+
+  createObject() {
+    var role=this.service.getUser().Role.Name;
+    return {
+      Id: +this.frmAppointment.value.Id,
+      Description: this.frmAppointment.value.Description,
+      Date: this.frmAppointment.value.Date,
+      Name: this.frmAppointment.value.Name,
+      AppointedUserId:+ (role=="CompanyUser"?this.frmAppointment.value.AppointedUserId:this.service.getUser().Id)
+    }
+  }
+
+  private setValueToView(obj: any) {
+    debugger
+    this.frmAppointment.patchValue({
+      Id: obj.Id,
+      Date: obj._date,
+      Description: obj.Description,
+      Name:obj.Name,
+      AppointedUserId:obj.User.Id
+    });
+
+  }
+
+  reset_Click(): void {
+
+    this.clearAll();
+  }
+  clearAll(): void {
+    this.isSubmit = false;
+    this.initAppointmentForm();
+  }
+
+
+  get role(){
+    if(localStorage.getItem("currentUser")!=null){
+      var user= JSON.parse(localStorage.getItem("currentUser"));
+      var role=user.Role.Name;
+      return  role;
+    }
+  }
+-------------------------------------------------angular view---------------------------------------------------------------------------------
+<div class="container">
+  <div class="row">
+
+    <div class="col-md-3">
+      <form [formGroup]="frmAppointment" (submit)="save_Subject_Click()">
+        <div class="form-group">
+          <label for="inputAddress"> Date</label>
+          <input type="date" class="form-control" formControlName="Date">
+          <app-validation [control]="f.Date" controlName="Date" [submit]="isSubmit"></app-validation>
+        </div>
+        <div class="form-group">
+          <label for="inputAddress"> Name</label>
+          <input type="text" class="form-control" formControlName="Name">
+          <app-validation [control]="f.Name" controlName="Name" [submit]="isSubmit"></app-validation>
+        </div>
+        <div class="form-group">
+          <label for="inputAddress">Description</label>
+          <input type="text" class="form-control" formControlName="Description">
+          <app-validation [control]="f.Description" controlName="Description"  [submit]="isSubmit"></app-validation>
+        </div>
+        <div class="form-group" *ngIf="role=='CompanyUser'">
+          <label for="inputAddress2">User</label>
+          <select formControlName="AppointedUserId" class="form-control">
+            <option value="-1">Select</option>
+            <option  *ngFor="let item of users" value={{item.Id}}>{{item.UserName}}</option>
+          </select>
+          <app-validation [control]="f.Description" controlName="Description"  [submit]="isSubmit" *ngIf="role=='CompanyUser'"></app-validation>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary mr-2" [disabled]="isSubmit">Save</button>
+        <button type="button" class="btn btn-primary" (click)="reset_Click()">Reset</button>
+      </form>
+      <!-- <div class="td">
+        <span *ngIf="notification" class="elementToFadeInAndOut">
+            <i class="fas fa-check-circle {{notification.class}}"></i>
+            {{notification.message}}
+        </span>
+    </div> -->
+    </div>
+
+  </div>
+</div>
+
+
+
+-----    const id = +this._route.snapshot.paramMap.get('id');
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, Validators, FormGroup, NgForm } from '@angular/forms';
+import { Route } from '@angular/compiler/src/core';
+import { Router } from '@angular/router';
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { map, catchError } from 'rxjs/operators';
+import { throwError, Observable } from 'rxjs';
+
+  this._router.navigate(['/student-profile', id]);
+
+
+
+@Injectable({
+  providedIn: 'root'
+})
+
+-----------------------------------------------------List with angular---------------------------------------------------------------------
+
+  constructor(public service: ServiceService,private toaster: ToastrService,private _router: Router) { }
+  appointmentsList:[]=[];
+  selectedIndex:number=-1
+  ngOnInit(): void {
+
+    var role=this.service.getUser().Role.Name;
+
+    if(role=="CompanyUser"){
+      this.getAppointments(-1);
+    }
+    else  {
+      this.getAppointments(this.service.getUser().Id);
+    }
+  }
+  getAppointments(userId) {
+    this.service.getData('Appointments/GetAppointments',{userId:userId}).subscribe(
+      res => this.getAppointmentsSuccess(res),
+      error => this.handleError(error))
+  }
+  getAppointmentsSuccess(result) {
+    debugger
+    if (result != null) {
+      this.appointmentsList = result;
+    }
+  }
+
+  onEdit(index,id) {
+    // this.selectedIndex = index;
+    // var obj = this.appointmentsList[this.selectedIndex];
+    // this.setValueToView(obj);
+    this._router.navigate(['/appointment', {id:id}]);
+
+  }
+
+  private setValueToView(obj: any) {
+    debugger
+    // this.frmAppointment.patchValue({
+    //   Id: obj.Id,
+    //   Date: obj._date,
+    //   Description: obj.Description,
+    //   Name:obj.Name,
+    //   AppointedUserId:obj.User.Id
+    // });
+
+  }
+  onDelete(index, id): void {
+    if (confirm('Are you sure to delete this record ?')) {
+      this.deleteAppointments(index, id);
+    }
+
+
+  }
+  deleteAppointments(index, id) {
+    this.service.getData('Appointments/DeleteAppointment', { id: id }).subscribe(
+      res => this.deleteAppointment_success(res, index),
+      error => this.handleError(error)
+    )
+  }
+  deleteAppointment_success(result, index): void {
+    if (result != null) {
+      this.appointmentsList.splice(index, 1);
+      this.toaster.success('Record Deleted Successfully');
+    }
+  }
+
+  handleError(error): void {
+
+  }
+
+  get role(){
+    if(localStorage.getItem("currentUser")!=null){
+      var user= JSON.parse(localStorage.getItem("currentUser"));
+      var role=user.Role.Name;
+      return  role;
+    }
+  }
+-------------------------------------------------------------------navbar--------------------------------------------------------
+<nav
+    class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
+  >
+    <div class="container">
+      <a class="navbar-brand" [routerLink]="['/']">angualrevicio</a>
+
+      <div
+        class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse"
+      >
+        <ul class="navbar-nav flex-grow">
+          <li
+            class="nav-item"
+            [routerLinkActive]="['link-active']"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <a class="nav-link text-dark" [routerLink]="['/']">Home</a>
+          </li>
+          <li class="nav-item" [routerLinkActive]="['link-active']">
+            <a class="nav-link text-dark" [routerLink]="['/employee']"
+              >Employee</a
+            >
+          </li>
+          <li class="nav-item" [routerLinkActive]="['link-active']">
+            <a class="nav-link text-dark" [routerLink]="['/fetch-data']"
+              >Fetch data</a
+            >
+          </li>
+          <li class="nav-item" [routerLinkActive]="['link-active']">
+            <a class="nav-link text-dark" [routerLink]="['/login']" (click)="logOut()"
+              >Logout</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <router-outlet></router-outlet>
+------------------------------------------------ANGULAR---------------------------------------------------------------------------------------
+------------------------------------------------BOOSTRAP AND FONTAWESOME FOR ANGULAR----------------------------------------------------------
+
+CSS
+ <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+
+JS
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+-------------------------------------------------.NET CORE ------------------------------------------------------------------------------
+
+ConnectionStrings": {
+    "DevConnection": "Server=LAPTOP-M3BJQKLN\\SQLEXPRESS;Database=evicio;Trusted_Connection=True;MultipleActiveResultSets=True;"
+  }
+}
+
+//"Server=10.10.1.49;Database=student_db;User Id=SA;password=dev@123;Trusted_Connection=False;MultipleActiveResultSets=true;"
+
+
+
+[Key]
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+
+        [Column(TypeName = "varchar(200)")]
+        public string Name { get; set; }
+        [Column(TypeName ="varchar(200)")]
+        public string Description { get; set; }
+        public int CreatedBy { get; set; }
+        public int AppointedUserId { get; set; }
+        [ForeignKey("AppointedUserId")]
+        public User User { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public int? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        public string _date
+        {
+            get
+            {
+                return string.Format("{0:yyyy-MM-dd}", Date);
+            }
+        }
+
+
+ public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllers();
+            //remove default json formatting
+            
+            //services.AddSession(options => {
+            //    options.IdleTimeout = TimeSpan.FromMinutes(1);//You can set Time   
+            //});
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = null;
+            });
+            services.AddDbContext<AppoinmentDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
+            services.AddScoped<ILogin, LoginDAL>();
+            services.AddScoped<IAppointment, AppointmentDAL>();
+        }
+
+
+ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseHttpsRedirection();
+            //app.UseSession();
+            app.UseRouting();
+
+            app.UseAuthorization();
+            //app.UseSession();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+        }
+-------------------------------------------------------------------encrpt password--------------------------------------------------------------
+public class CryptoEncrypt
+        {
+            public static string Encrypt(string toEncrypt, bool useHashing)
+            {
+                byte[] keyArray;
+                byte[] toEncryptArray = UTF8Encoding.UTF8.GetBytes(toEncrypt);
+
+
+                string key = "Syed Moshiur Murshed";
+
+                if (useHashing)
+                {
+                    MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
+                    keyArray = hashmd5.ComputeHash(UTF8Encoding.UTF8.GetBytes(key));
+                    hashmd5.Clear();
+                }
+                else
+                    keyArray = UTF8Encoding.UTF8.GetBytes(key);
+
+                TripleDESCryptoServiceProvider tdes = new TripleDESCryptoServiceProvider();
+                tdes.Key = keyArray;
+                tdes.Mode = CipherMode.ECB;
+                tdes.Padding = PaddingMode.PKCS7;
+
+                ICryptoTransform cTransform = tdes.CreateEncryptor();
+                byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+                tdes.Clear();
+                return Convert.ToBase64String(resultArray, 0, resultArray.Length);
+            }
+        }
+-------------------------------------------------------.NET CORE-------------------------------------------------------------------------------
+
+---------------------------------------------------------DAPPER---------------------------------------------------------------------------------
+private static string connectionString = @"Data Source=LAPTOP-M3BJQKLN\SQLEXPRESS;Initial Catalog=interviewDb;Integrated Security=True";
+
+        public static IDbConnection Conn()
+        {
+            return GetOpenedConnection();
+        }
+
+        public static SqlConnection GetOpenedConnection()
+        {
+            using (SqlConnection myConnection = new SqlConnection(connectionString))
+            {
+                if (myConnection.State == ConnectionState.Closed)
+                {
+                    myConnection.Open();
+                }
+                return new SqlConnection(connectionString);
+            }
+        }
+        public static void ExecuteWithoutReturn(string procedureName, DynamicParameters param = null)
+        {
+            Conn().Execute(procedureName, param, commandType: CommandType.StoredProcedure);
+
+        }
+        public static IEnumerable<T> ReturnList<T>(string procedureName, DynamicParameters param = null)
+        {
+            return Conn().Query<T>(procedureName, param, commandType: System.Data.CommandType.StoredProcedure);
+        }
+
+
+        //DapperORM.ExecuteReturnScalar<int>(_,_);
+        public static T ExecuteReturnScalar<T>(string procedureName, DynamicParameters param = null)
+        {
+            using (SqlConnection sqlCon = new SqlConnection(connectionString))
+            {
+                sqlCon.Open();
+                return (T)Convert.ChangeType(sqlCon.ExecuteScalar(procedureName, param, commandType: CommandType.StoredProcedure), typeof(T));
+            }
+
+        }
+
+
+	public User GetUser(User user)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("@Username", user.Username);
+            param.Add("@Password", user.Password);
+            var userObj = DbAccess.Returnlist<User>("Validate_User", param).FirstOrDefault<User>();
+            return userObj;
+        }
+---------------------------------------------------------------------C# and dapper--------------------------------------------------------------
+
+using System;
+using Dapper;
+using Microsoft.SqlServer.Server;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AviorERP.Master.Service.DataAccessLayer
+{
+    public class DbAccess:DbConnection
+    {
+        protected static DataSet ExecuteReader(string sp, int database)
+        {
+            return ExecuteReader(sp, null, database);
+        }
+
+        protected static DataSet ExecuteReader(string sp, List<SqlParameter> parameters = null, int database = AVIOR_ERP)
+        {
+            using (SqlConnection connection = DbAccess.GetOpenedConnection(database))
+            {
+                SqlCommand cmd = new SqlCommand(sp, connection);
+                cmd.CommandTimeout = 300;
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.Clear();
+                if (parameters != null && parameters.Count > 0)
+                {
+                    cmd.Parameters.AddRange(parameters.ToArray());
+                }
+                DataSet data;
+                new SqlDataAdapter(cmd).Fill(data = new DataSet());
+                return data;
+            }
+        }
+        protected static List<Dictionary<string, string>> TransformDataTableToList(DataTable table)
+        {
+            List<Dictionary<string, string>> data = new List<Dictionary<string, string>>();
+            if (table.Rows.Count > 0)
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    var obj = new Dictionary<string, string>();
+                    foreach (DataColumn column in table.Columns)
+                    {
+                        obj.Add(column.Caption, row[column.Ordinal].ToString());
+                    }
+                    data.Add(obj);
+                }
+            }
+            return data;
+        }
+
+        protected static DataTable ConvertListToDataTable<T>(string[] columns, List<T> items, Action<DataRowCollection, T> convert)
+        {
+            if (columns == null || columns.Length == 0 || items == null || convert == null)
+            {
+                throw new Exception("Invalid arguments");
+            }
+            DataTable dataTable = new DataTable();
+            foreach (string column in columns)
+            {
+                dataTable.Columns.Add(column);
+            }
+            foreach (T item in items)
+            {
+                convert(dataTable.Rows, item);
+            }
+            return dataTable;
+        }
+        public IEnumerable<SqlDataRecord> GetIdList(string fieldName, int[] idList)
+        {
+            if (idList == null || idList.Length == 0)
+            {
+                return null;
+            }
+            var meta = new SqlMetaData(fieldName, SqlDbType.BigInt);
+            return idList.Select(x => { var r = new SqlDataRecord(meta); r.SetInt32(0, x); return r; });
+        }
+        public DataTable sendIdsToSql(string id, int[] ids)
+        {
+            return ConvertListToDataTable(new string[] { "[" + id + "]" }, ids.ToList(), (DataRowCollection, e) =>
+            {
+                DataRowCollection.Add(new object[]{
+                    e
+                });
+            });
+        }
+
+        public class CryptoEncrypt
+        {
+            public static string Encrypt(string toEncrypt, bool useHashing)
+            {
+                byte[] keyArray;
+                byte[] toEncryptArray = System.Text.UTF8Encoding.UTF8.GetBytes(toEncrypt);
+
+
+                string key = "Syed Moshiur Murshed";
+
+                if (useHashing)
+                {
+                    MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
+                    keyArray = hashmd5.ComputeHash(UTF8Encoding.UTF8.GetBytes(key));
+                    hashmd5.Clear();
+                }
+                else
+                    keyArray = UTF8Encoding.UTF8.GetBytes(key);
+
+                TripleDESCryptoServiceProvider tdes = new TripleDESCryptoServiceProvider();
+                tdes.Key = keyArray;
+                tdes.Mode = CipherMode.ECB;
+                tdes.Padding = PaddingMode.PKCS7;
+
+                ICryptoTransform cTransform = tdes.CreateEncryptor();
+                byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+                tdes.Clear();
+                return Convert.ToBase64String(resultArray, 0, resultArray.Length);
+            }
+        }
+        /*Dapper Functions*/
+        public static List<IDictionary<string, object>> TransformDataToDic(IEnumerable<dynamic> result)
+        {
+            return result.Select(x => (IDictionary<string, object>)x)?.ToList();
+        }
+
+        public static void ExecuteWithoutReturn(string procedureName, DynamicParameters param = null, int database = DbConnection.AVIOR_ERP)
+        {
+
+            Conn(database).Execute(procedureName, param, commandType: CommandType.StoredProcedure);
+
+        }
+        public static T ExecuteReturnScalar<T>(string procedureName, DynamicParameters param = null, int database = AVIOR_ERP)
+        {
+            return (T)Convert.ChangeType(DbConnection.Conn().ExecuteScalar(procedureName, param, commandType: CommandType.StoredProcedure), typeof(T));
+
+        }
+        public static List<T> ReturnList<T>(string procedureName, DynamicParameters param = null, int database = DbConnection.AVIOR_ERP)
+        {
+            return Conn(database).Query<T>(procedureName, param, commandType: CommandType.StoredProcedure).ToList();
+        }
+        public static T ReturnObject<T>(string procedureName, DynamicParameters param = null, int database = DbConnection.AVIOR_ERP)
+        {
+            return Conn(database).Query<T>(procedureName, param, commandType: CommandType.StoredProcedure).FirstOrDefault();
+        }
+        public static SqlMapper.GridReader ReturnMultipleList(string procedureName, object /*DynamicParameters*/ param = null, int database = AVIOR_ERP)
+        {
+            return Conn(database).QueryMultiple(procedureName, param, commandType: CommandType.StoredProcedure);
+        }
+        public static object ReturnCoumnValue(string procedureName, DynamicParameters param = null, string columnName = null, int database = AVIOR_ERP)
+        {
+            var result = Conn(database).Query(procedureName, param, commandType: CommandType.StoredProcedure).Select(x => (IDictionary<string, object>)x).ToList().FirstOrDefault();
+            return result[columnName];
+        }
+        public static IEnumerable<Dictionary<string, object>> ReturnDicList(string procedureName, DynamicParameters param = null, int database = AVIOR_ERP)
+        {
+            var list= Conn(database).Query(procedureName, param, commandType: CommandType.StoredProcedure).Cast<IDictionary<string, object>>();
+            //return list.Select(r => r.ToDictionary(d => d.Key, d => d.Value?.ToString()));
+            return list.Select(r => r.ToDictionary(d => d.Key, d => d.Value));
+
+        }
+        public static List<IDictionary<string, object>> RetunSingleObject(string procedureName, DynamicParameters param = null, int database = AVIOR_ERP)
+        {
+            return Conn(database).Query(procedureName, param, commandType: CommandType.StoredProcedure).FirstOrDefault();
+        }
+        public static int ExecuteTranaction(string procedureName, /*DynamicParameters*/ object param = null, IDbTransaction trans = null, int database = AVIOR_ERP)
+        {
+            return _transaction.Connection.Execute(procedureName, param, _transaction, commandType: CommandType.StoredProcedure);
+
+        }
+        protected void ThrowSqlException(int number)
+        {
+            switch (number)
+            {
+                case 547:
+                    throw new Exception("Cannot delete this record, this is associated with other record.");
+                case 2601:
+                case 2627:
+                    throw new Exception("Cannot insert duplicate value.");
+                case 50000:
+                    throw new Exception("Record has been changed while you work, refersh the record and try again.");
+                default:
+                    throw new Exception("Process can not be completed.");
+            }
+        }
+    }
+}
+--------------------------------------------------------------------------Additional data--------------------------------------------------------
+
+confirm password
+<div class="form-group row" formGroupName="passwords">
+  <div class="form-group">
+     <label for="password" class="control-label">Contraseña:</label>
+     <input type="password" class="form-control" formControlName="password" title="Please enter your password">
+     <p class="help-block" *ngIf="signUpForm.get('password').hasError('required') && signUpForm.get('password').touched">Debe ingresar una contraseña</p>
+  </div>
+  <div class="form-group">
+     <label for="confirmedPassword" class="control-label">Confirmar Contraseña:</label>
+     <input type="password" class="form-control" formControlName="confirmedPassword"  title="Please re-enter your password">
+     <p class="help-block" *ngIf="signUpForm.get('confirmedPassword').hasError('required') && signUpForm.get('confirmedPassword').touched">Password must be required</p>
+     <p class="help-block" *ngIf="signUpForm.get('confirmedPassword').hasError('passwordMismatch') && signUpForm.get('confirmedPassword').touched">password does not match</p>
+  </div>
+     buildForm(): void {
+            this.userForm = this.formBuilder.group({
+                passwords: this.formBuilder.group({
+                    password: ['', [Validators.required]],
+                    confirm_password: ['', [Validators.required]],
+                }, {validator: this.passwordConfirming}),
+
+            });
+        }
+add this custom function for validate password and confirm password
+
+  passwordConfirming(c: AbstractControl): { invalid: boolean } {
+    if (c.get('password').value !== c.get('confirm_password').value) {
+        return {invalid: true};
+    }
+}
+Display error when password does not match
+
+<div style='color:#ff7355' *ngIf="userForm.get(['passwords','password']).value != userForm.get(['passwords','confirm_password']).value && userForm.get(['passwords','confirm_password']).value != null">
+  Password does not match</div>
+
+---------------service
+
+
+
+  postData(url, formData) {
+    return this.http.post(this.baseURI + url, formData).pipe(catchError(this.handleError));;
+  }
+  //
+  getData(url, param) {
+    return this.http.get(this.baseURI + url, {
+      params: param
+    }).pipe(catchError(this.handleError));
+  }
+  //
+  getStudents(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseURI + 'Student/GetStudents');
+  }
+  getProvinces(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseURI + 'Master/GetProvinces');
+  }
+  getsStudetCountsByProvince(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseURI + 'Master/GetStudentCountByProvince');
+  }
+  private handleError(errorResponse: HttpErrorResponse) {
+    if (errorResponse.error instanceof ErrorEvent) {
+      this.error = "clenet side error";
+    }
+    else {
+      this.error = "server side error";
+    }
+    return throwError(errorResponse);
+  }
+
+AdminLoginComponent } from './shared/admin-login/admin-login.component';
+
+const routes: Routes = [
+  { path: "", component: HomeComponent },
+  { path: '', redirectTo: '/', pathMatch: 'full' },
+  {path: 'login', loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)},
+  {path: '', loadChildren: () => import('./modules/contribution/contribution.module').then(m => m.ContributionModule)},
+  {path: '', loadChildren: () => import('./modules/student/student.module').then(m => m.StudentModule)},
+  {path: '', loadChildren: () => import('./modules/masterfiles/masterfiles.module').then(m => m.MasterfilesModule)},
+  { path: "about", component: AboutComponent },
+  { path: "contact", component: ContactComponent },
+  { path: "admin", component: AdminLoginComponent },
+  { path: "contributor", component: AdminLoginComponent },
+  { path: "**", component: NotFoundComponent },
+
+];
+
+
+const appRoutes: Routes = [
+  {
+    path: '',
+    children: [
+      { path: 'student', component: StudentComponent, canActivate: [AuthGuard], data: { path: 'student' } },
+      { path: 'student-detail', component: StudentDetailComponent, resolve: { studentList: StudentListResolve }, canActivate: [AuthGuard], data: { path: 'student-detail' } },
+      { path: 'student-profile/:id', component: StudentProfileViewComponent, canActivate: [AuthGuard], data: { path: 'student-profile' } },
+    ]
+  }
+]
+
+
+@NgModule({
+  imports: [RouterModule.forChild(appRoutes)],
+  exports: [RouterModule]
+})
+
+---------------bind
+
+var bindToDropdown = function (control, dropDownlist, defaultOption) {
+    $(control).html('');
+    if (defaultOption == undefined || defaultOption === true) {
+        $(control).append($('<option>').text('Select').attr('value', ''));
+    }
+    if (dropDownlist === 'null' || dropDownlist == null) return;
+    $(dropDownlist).each(function (index, val) {
+        $(control).append('<option value="' + val.id + '">' + val.name + '</option>');
+    });
+}
+
+-------------
+
+function createObject() {
+    var object = {};
+    if (selectedIndex === -1) {
+        object.id = -1;
+    } else {
+        object.id = list[selectedIndex].id;
+        object.timeStamp = list[selectedIndex].timeStamp;
+    }
+    object.name = $('#txtName').val();
+    object.active = $('#Active').is(':checked');
+    return object;
+}
+
+
+
+function updateGrid(data) {
+    $.each(data, function (key, item) {
+        $("#tbdata").append(key,formatItem(item));;
+    });
+    //if (selectedIndex === -1) {
+    //    addListItem(0, data);
+    //    setMessage('Record successfully saved.');
+    //} else {
+    //    addListItem(1, data);
+    //    setMessage('Record successfully updated.');
+    //}
+}
+
+function formatItem(index,item) {
+    return '<tr onClick="item_Click('+index+')><td>' + item.name + '</td> <td> ' + item.active + ' </td></tr>';
+}
+
+
+function formatDate(dateForFormat) {
+    if (dateForFormat) {
+        var datedate = new Date(parseInt(dateForFormat.substr(6)));
+        var dateformatted = datedate.getFullYear() + "." +
+              (datedate.getMonth() + 1) + "." +
+              datedate.getDate();
+        return dateformatted;
+    }
+    else {
+        return "--";
+    }
+}
+
+------
+<connectionStrings>
+    <add name="interview" connectionString="Data Source=LAPTOP-M3BJQKLN\SQLEXPRESS;Initial Catalog=interviewDb;Integrated Security=True" />
+  </connectionStrings>
+  <system.web>
+    <authentication mode="Forms">
+      <forms defaultUrl="/Home/About" loginUrl="/Home/Index" slidingExpiration="true" timeout="2880"></forms>
+    </authentication>
+    <compilation debug="true" targetFramework="4.7.2" />
+    <httpRuntime targetFramework="4.7.2" />
+  </system.web>
+
+-----------------
+   <table class="table-bordered table-striped table table-hover" id="">
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Action</th>
+                        </tr>
+                        <tbody id="tbdata">
+
+                        </tbody>
+                    </table>
+
+---------repository
+public class EmployeeRepository : IEmployee
+
+{
+
+private EmployeeDBEntities DBcontext;
+
+public EmployeeRepository(EmployeeDBEntities objempcontext)
+
+{
+
+this.DBcontext = objempcontext;
+
+}
+
+public void InsertEmployee(Models.EmployeeDetail Employee)
+
+{
+
+DBcontext.EmployeeDetails.Add(Employee);
+
+DBcontext.SaveChanges();
+
+}
+
+public IEnumerable<Models.EmployeeDetail> GetEmployees()
+
+{
+
+return DBcontext.EmployeeDetails.ToList();
+
+}
+
+public Models.EmployeeDetail GetEmployeeByID(int EmployeeId)
+
+{
+
+return DBcontext.EmployeeDetails.Find(EmployeeId);
+
+}
+
+public void UpdateEmployee(Models.EmployeeDetail Employee)
+
+{
+
+DBcontext.Entry(Employee).State = EntityState.Modified;
+
+DBcontext.SaveChanges();
+
+}
+
+public void DeleteEmployee(int EmployeeId)
+
+{
+
+EmployeeDetail user = DBcontext.EmployeeDetails.Find(EmployeeId);
+
+DBcontext.EmployeeDetails.Remove(user);
+
+DBcontext.SaveChanges();
+
+}
+----------------------
+
+public class EmpController : Controller
+
+{
+
+private IEmployee Iemp;
+
+public EmpController()
+
+{
+
+this.Iemp = new EmployeeRepository(new EmployeeDBEntities());
+
+}
+
+}
+---------------
+
+private IBookRepository _bookRepository;  
+public BookController()  
+{  
+    this._bookRepository = new BookRepository(new BookContext());  
+}  
+
+----------------------
+
+public ActionResult Index()
+
+{
+
+var list = Iemp.GetEmployees().ToList();
+
+return View(list);
+
+}
+
+      return Json(new  { Status = flag },, JsonRequestBehavior.AllowGet);
+
+--------------MVC CONNECTION----------------
+ public class BookContext : DbContext  
+    {  
+        public BookContext()  
+            : base("name=BookStoreConnectionString")  
+        {  
+        }  
+        public DbSet<Book> Books { get; set; }  
+    }  
+
+----------------------------Sql connection----------
+ private static Dictionary<int, string> connections = new Dictionary<int, string>();
+        public const int STORAGE_MOBILEAPP = 0;
+        public static System.Data.IDbTransaction _transaction;
+        public static System.Data.IDbConnection _conection;
+        public static readonly string dbStorage = "Data Source=storge.cwuo5v9ypif8.us-east-1.rds.amazonaws.com;Initial Catalog=STORGEDB;User ID=admin;Password=tgCUNtnhyrcRnZY8uCkt;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
+
+        static DbConnection()
+        {
+            connections.Add(STORAGE_MOBILEAPP, dbStorage);
+
+        }
+
+        public static SqlConnection GetOpenedConnection(int database)
+        {
+            SqlConnection connection = null;
+            try
+            {
+                return connection = new SqlConnection(connections[database]);
+            }
+            finally
+            {
+                if (connection != null) { connection.Open(); }
+            }
+        }
+        public static string GetOpenedConnectionString(int database)
+        {
+            SqlConnection connection = null;
+            try
+            {
+                connection = new SqlConnection(connections[database]);
+                return connection.ConnectionString;
+            }
+            finally
+            {
+                if (connection != null) { connection.Open(); }
+            }
+        }
+        public DynamicParameters para
+        {
+            get
+            {
+                return new DynamicParameters();
+            }
+        }
+
+        public static System.Data.IDbConnection Conn(int database = STORAGE_MOBILEAPP)
+        {
+            return GetOpenedConnection(database);
+            //return _conection;
+        }
+
+        public static void BeginTranaction()
+        {
+            _conection = new SqlConnection(connections[0]);
+            _conection.Open();
+            _transaction = _conection.BeginTransaction();
+        }
+        public static void CommitTranaction()
+        {
+            _transaction.Commit();
+        }
+        public static void RollbackTranaction()
+        {
+            _transaction.Rollback();
+        }
+    }
+----------------------Connection Strings---------------------
+ <connectionStrings>
+    <add name="MDConnection" connectionString="Data Source=LAPTOP-M3BJQKLN\SQLEXPRESS;Initial Catalog=emApp;Integrated Security=True;" providerName="System.Data.SqlClient" /> 
+  </connectionStrings>
+  
+
+------------------------FOR_KEY------------------------------------------------
+public class Student
+{
+    public int StudentID { get; set; }
+    public string StudentName { get; set; }
+        
+    public int StandardRefId { get; set; }
+    
+    [ForeignKey("StandardRefId")]
+    public Standard Standard { get; set; }
+}
