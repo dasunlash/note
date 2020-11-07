@@ -1,0 +1,57 @@
+two module of compilation
+ JIt
+ AOT
+
+AOT-
+identifie the errors at the the compile time not the run time
+
+ng serve command we get jit compilation not the AOT,
+that is why we can identify errors at the run time.
+
+if we type ng serve --aot true then we can errors at the compile .
+instead of at the run time
+
+JIT-compile at the run time,need to dwonlaod angular compiler
+AOT-compile at the  build time,no need to downlaod angular compiler
+in ng build default use the  aot.
+
+	by default,the following 2 command s use JIT complilation
+      ng build
+      ng server
+
+  if we want AOT
+ ng build --aot
+ ng serve --aot
+
+to turn of AOT for the production build
+  ng build --prod --aot false
+
+------------------------
+
+prod build
+dev build
+1.produce the source map(help us to easily debug applciation even after the file a
+ae compressed and combined)
+
+to generate source map-ng build -dev -sm false
+
+with t ge dev build global styles are extrated.js files where as with prod buld 
+they are extractedto.css file.
+ 
+ng build --prod -ec false.
+
+ng prod --build support minification and uglification 
+Minification and uglification
+
+minification-is the process of removing excess whitespces,comments
+unglification use the short variable name for the function variables.
+
+tree shaking- removeing unused code from the our project
+
+tree shaking support by the ng build -prod and ng build --dev not support it
+
+ng build--prod use AOT
+ng build --dev doesnot use AOT
+
+
+

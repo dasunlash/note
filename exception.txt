@@ -1,0 +1,39 @@
+thread all about parrale excution,if you have some heavy task if you want it pararaly and exectue continuesoly.
+
+
+--finally--
+
+if we decalre return; it terminate the programe.execution doesnot go downn.
+f you want exeute but finally block will execute
+
+
+if we dont use catch bloack abnornal termination occure.but finally will execute.
+
+
+finally-all mandotory exeution sttement should be present inside finally block
+
+application exception-
+
+system conditon-all the exception that ar raise by the clr
+condition are predifined and base on the pre defince condition exception will thrown.
+
+ ex=dividebyzero
+     oveflowexception
+     format
+
+application exception-programmer will throw the exception(by the developer)
+
+application exception-
+if(number%2){
+throw new ApplicationException("user friendly msg");
+
+}
+
+if we want descriptive in our application exception. we can create our custome exception.we have to iherite the ApplicationException calss
+finally-clean up resouces after the execution
+
+20) What is the difference between dispose() and finalize() methods in C#?
+The dispose() method is explicitly called by user to free unmanaged resources such as files, database connections etc whereas finalize() method is implicitly called by garbage collector to free unmanaged resources like files, database connections etc.
+
+The dispose() method belongs to IDisposable interface whereas finalize() method belongs the Object class.
+
