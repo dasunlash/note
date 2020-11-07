@@ -1,0 +1,50 @@
+useReducer
+ hook that us used for state managment
+ alterbative for use state
+ usestate is build using useReduce
+
+useState-state
+useEffect-side effects
+useContext-context API
+useReducer-reducers
+
+const array1=[1,2,3,4];
+reduce method take two para 
+  1.reducer fun
+  2.initial value
+
+
+useReduce hook except two para =>(reducer,initialState)
+
+userReduce hook return a pair of values
+ =>[newState,dispatch]
+
+reducer  function except=>reducer(currentState,action)
+return one value
+--------------------------------------
+ const reducer=(state,action)=>{
+  switch(action)
+ case 'incremnet';
+  return state+1.
+  default;
+return state;
+}
+action is instruction to the  reducer fucntion
+
+const [count,dispatch]=useReducer(reducer,initialState);
+
+  ()=>dispatch("increment");
+
+
+useReucer with useContext
+ send ctate to every componet you want
+
+fech date using useReducer-watch
+
+
+ 
+ 
+ 
+
+
+ 	

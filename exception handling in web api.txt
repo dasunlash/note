@@ -1,0 +1,11 @@
+Exception Handling in ASP.NET Web API
+
+1.HttpResposeException
+2.Exception Filters
+3.Registering Exception Filters-globally,controller ,and method wise
+4.HttpError
+
+HttpResponseException-HttpResposeException(HttpStatusCode.NotFound)- return hhtpresponse;
+Exception filter-implement the IExceptionFilter
+		overide the OnException method
+HttpError-return http status code(return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ModelState););
