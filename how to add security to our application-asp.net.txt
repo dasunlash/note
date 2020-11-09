@@ -1,0 +1,35 @@
+How to secure our site
+
+1.Cross-Site Request Forgery (CSRF)
+ An attcker act as a trusted source and send some forged data.
+ the site process the forged data beacuse site think that it comming 
+from the trusted sources.
+
+solution-we cn use antiforgertoken
+         we can send token with the every request.
+
+2.proper exception handling method,
+ if not we it leads usto expose sensotive data.tale,sps,coding to the user,
+then haker can grap some data .
+
+solution-we can show the user friendly error message to the user.
+
+3.cros site scripting(xss)
+ we can run some malicious script throuh our wep application
+The attacker can get cooke data and user name password(user credentials);
+  solution-url encoding
+          html encoding
+           regular expression validations
+
+4.sql injection 
+  attcke can inject sql command throught the application 
+  he can modified data and delete data
+solution-use stored procedure
+         parametrized qoery
+         stored encrypted data
+
+5.SSL-
+established the secure or encrypted connection between client and server.
+With SSL, the requests passed between the client browser and the server, and the responses from the server to the client browser,
+ will be encrypted to maintain the integrity of the data.
+

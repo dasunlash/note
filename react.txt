@@ -1,0 +1,12 @@
+whys we use react hook rather than class componenet
+1.no this keyword
+2.no more bindings
+
+in class component we dont pass props manually.but in function
+component we have to pass props 
+.
+we can use class componet and functional component 
+together.if pass data from claz component to functional component
+we can acceess that component inside the func component
+
+functionl component maintain the state.but class do
