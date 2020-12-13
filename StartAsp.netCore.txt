@@ -1,0 +1,12 @@
+Create ClassLibrary with version
+dotnet new classlib -f netcoreapp3.1 -n PracticalTest.DataObject
+
+Reference Library Project to Web API Project
+dotnet add PracticalTest.Api/PracticalTest.Api.csproj reference  PracticalTest.DAL/PracticalTest.DAL.csproj
+
+Finally Add Projects to Solution
+
+dotnet sln add PracticalTest.DataObject/PracticalTest.DataObject.csproj
+
+Asp.net Core Reference
+https://www.codaffection.com/asp-net-core-article/angular-crud-with-asp-net-core-web-api/

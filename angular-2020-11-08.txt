@@ -36,4 +36,5 @@ If https://localhost:4200/gibberish this will redirect to pageNotFound screen be
 
 Case 2 pathMatch:'prefix':
 
-If the routes have { path: '', redirectTo: 'welcome', pathMatch: 'prefix' }, now this will never reach the wildcard route since every url would match path:'' defined.
+If the routes have { path: '', redirectTo: 'welcome', pathMatch: 'prefix' }, now this will never reach the wildcard route since every url would 
+match path:'' defined.

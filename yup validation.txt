@@ -1,0 +1,86 @@
+
+
+// onChange={ev => onEmailChange(ev, setFieldValue)}
+
+// const onEmailChange = (e, setFieldValue) => {
+//   const domain = e.target.value.replace(/.*@/, '')
+//   setFieldValue('mail.domain', domain, false)
+// }
+
+
+// validationSchema={Yup.object().shape({
+//   email: Yup.number(),
+//   social: Yup.object().shape({
+//     facebook: Yup.number()
+//                  .transform((value, originalValue) => originalValue.trim() === "" ? null: value)
+//                  .nullable()
+//   })
+// })}
+
+
+// validationSchema={Yup.object().shape({
+//   email: Yup.number().typeError("must be a number"),
+//   social: Yup.object().shape({
+//     facebook: Yup.number()
+//                  .typeError("must be a number")
+//                  .transform((value, originalValue) => originalValue.trim() === "" ? null: value)
+//                  .nullable()
+//   })
+// })}
+
+
+// const contactSchema = yup.object({
+//   name: yup.string()
+//     .required(),
+//   nrOfApples: yup
+//     .number()
+//     .min(0)
+//     .max(999)
+//     .nullable(true)
+//     // checking self-equality works for NaN, transforming it to null
+//     .transform((_, val) => val === val ? val : null) 
+// })
+
+
+// location: yup
+//     .object()
+//     .default(null)
+//     .nullable()
+//     .shape({
+//       country: yup.string().required(),
+//       state: yup.string().required(),
+//       city: yup.string().required()
+//     })
+
+
+3
+
+// You must set the default of location to null using mixed.default(value) like this:
+
+// location: yup
+//     .object()
+//     .default(null)
+//     .nullable()
+//     .shape({
+//       country: yup.string().required(),
+//       state: yup.string().required(),
+//       city: yup.string().required()
+//     })
+// Update:
+
+// location can never be null, only its properties can be.
+
+// You can do it like this:
+
+// location: object()
+//     .shape({
+//       country: string().default(null).nullable().test(
+//         value => value === null || value,
+//       ),
+//       state: string().default(null).nullable().test(
+//         value => value === null || value,
+//       ),
+//       city: string().default(null).nullable().test(
+//         value => value === null || value,
+//       )
+//     })
