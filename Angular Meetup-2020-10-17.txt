@@ -1,0 +1,39 @@
+convert type scrip to java script becoz my browseer cant understnd the type script.
+
+---Framwork and Library---
+Framwork have all feature.We dont wnat any third class libarary.
+but in library we need  third party library.thoink react ,
+react use formick for validation, and send htp request use axios.
+
+---Why boostrap --
+used to create responsive desinged.if i want adaptive web pages.if i use mobile, tab ,web I can see similar resolution.
+i can get the similar experience with using mobile and web or tablet
+
+MVC
+
+
+dom
+page load browser create the DOM
+
+restfull service use HTTP protocall to send request.there ara action verbs to send request 
+get,post,put,delete for retrive,save,update,delete
+
+restfull service is architectural pattern that  used for creating service and apiusing http protocal.
+
+Rest constraint
+ client server-client send request server send response to the client request
+.
+States
+nothing store in the server related to the client, 
+client send all necessaray data to process by the server.
+
+cacheble 
+cachening avoid unnessary processing.we can store data in memory cache  and we dont want to send requset to the server side again and again.
+
+WCf
+there are lot of configuration to  convert resful service.
+
+extension methods are  static method .it locates inside the static class
+add new method to the existing type without modifying the original source code.
+             
+

@@ -1,0 +1,10 @@
+content negotiation-depending on the accept header value server send the request.
+task- Task is used tocreated theasynchrnus execution.
+Thread is lightweight process,Thread is unit of process that is responsile for executing the application code.every programe has a logc or code ,Thread  has a resposibility to execute that code or logic.
+
+Two type of routing in asp.net webapi
+   1.conventional routing
+   2.attribute routing
+Conventional routing
+  under the WepApiConfig  we can see our default route
+  the config.Routes=>
